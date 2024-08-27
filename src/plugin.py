@@ -1,6 +1,7 @@
 import os
 import datetime
 import dateutil.parser
+from dateutil.utils import default_tzinfo
 
 from CTFd.models import Challenges, db
 from CTFd.utils.decorators import admins_only
@@ -45,13 +46,14 @@ def update_timed_release(chal_id):
     release_time = request.form.get("release")
     try:
         # convert string of the form 2018-06-12T19:30 to a datetime
-        release_time = dateutil.parser.parse(release_time)
+        release_time = default_tzinfo(dateutil.parser.parse(release_time), datetime.timezone.utc)
     except ValueError:
         return jsonify({"error": "invalid date format"}), 400
 
     chal = Challenges.query.filter_by(id=chal_id).first_or_404()
 
-    if release_time < datetime.datetime.now():
+    utc_now = datetime.datetime.now(datetime.timezone.utc)
+    if release_time < utc_now:
         return jsonify({"error": "provided date is in the past"}), 400
 
     # update existing timed release or create a new one
@@ -81,7 +83,9 @@ def process_timed_releases():
     # firstly, make challenges visible if their timed_release is in the past
     trs = db.session.query(TimedReleases).all()
     for tr in trs:
-        if tr.release > datetime.datetime.now():
+        utc_now = datetime.datetime.now(datetime.timezone.utc)
+        utc_release = tr.release.replace(tzinfo=datetime.timezone.utc)
+        if utc_release > utc_now:
             # do nothing if release is in the future
             continue
 
