@@ -33,10 +33,10 @@
                 <td>{{ challenge.id }}</td>
                 <td>{{ challenge.name }}</td>
                 <td>{{ challenge.state }}</td>
-                <td>{{ challenge.timed_release }}  {% if challenge.timed_release != "—" %}&nbsp;&nbsp;<a href="/admin/timed_releases/delete/{{ challenge.id }}">❌</a>{% endif %}  </td>
+                <td>{{ challenge.timed_release }}  {% if challenge.timed_release != "—" %}&nbsp;&nbsp;<a href="{{ url_for('timed_releases.delete_timed_release', chal_id=challenge.id) }}">❌</a>{% endif %}  </td>
                 <td>
                 {% if challenge.state == "hidden" %}
-                    <form class="update-timed-release" action="/admin/timed_releases/{{ challenge.id }}" method="POST">
+                    <form class="update-timed-release" action="{{ url_for('timed_releases.update_timed_release', chal_id=challenge.id) }}" method="POST">
                         <input value="{{ Session.nonce }}" name="nonce" hidden>
 
                         <input type="datetime-local" name="release"
@@ -55,5 +55,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/plugins/ctfd-timed-releases-v2/src/assets/script.js"></script>
+<script src="{{ url_for('plugins.ctfd-timed-releases-v2.src.assets', path='script.js') }}"></script>
 {% endblock %}
